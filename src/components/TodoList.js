@@ -46,26 +46,30 @@ const TodoList = () => {
         }
         setTodos(todos.filter((todo)=>todo.id!==id));
     }
-
+    //렌더링
     return (
-        <div className={styles.container}>
-            <h1>Reminder</h1>
-            
+        <div className="max-w-600 w-2/5 mx-auto p-10 bg-white shadow-xl rounded-lg">
+            <h1 className="text-4xl text-orange-500 mb-7 font-extrabold underline underline-light underline-offset-1 decoration-double">Reminder</h1>
             <div className={styles.input_group}>
                 <input
                 type="text"
-                className={styles.itemInput}
+                className="w-full p-1 mb-4 border border-gray-300 rounded shadow-lg"
                 value={itemInput}
                 onChange={(e)=>setItem(e.target.value)}
                 />
                 <input
                 type="date"
-                className={styles.dateInput}
+                className="w-2/5 p-1 mb-4 border border-gray-300 rounded shadow-lg"
                 value={dateInput}
                 onChange={(e)=>{setDate(e.target.value)}}
                 />
             </div>
-            <button className={but=="리마인더 추가하기"? styles.addButton:styles.modiButton} onClick={addTodo}>
+            <button className={but=="리마인더 추가하기"? 
+            "shadow-lg w-40 justify-self-end p-1 mb-4 bg-blue-500 text-white border border-blue-500 \
+            rounded hover:bg-white hover:text-blue-500"
+            :"shadow-lg w-40 justify-self-end p-1 mb-4 bg-green-500 text-white border border-green-500 \
+            rounded hover:bg-white hover:text-green-500"
+            } onClick={addTodo}>
                 {but}
             </button>
             <ul>
