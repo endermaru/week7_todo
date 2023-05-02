@@ -1,6 +1,21 @@
-import React, {useState} from "react";
+import React, {useState,useEffect} from "react";
 import TodoItem from "./Todoitem"
 import styles from "../styles/TodoList.module.css";
+
+//firebase
+import {db} from "../firebase";
+import {
+    collection,
+    query,
+    doc,
+    getDocs,
+    addDoc,
+    updateDoc,
+    deleteDoc,
+    orderBy,
+} from "firebase/firestore";
+
+const todoCollection = collection(db,"todos");
 
 const TodoList = () => {
     const today=new Date();
@@ -11,14 +26,49 @@ const TodoList = () => {
     const [but,setbut]=useState('리마인더 추가하기');
     const [modid,setmodid] =useState("")
 
+    const getTodos = async () => {
+        const q=query(todoCollection);
+        // const q = query(collection(db, "todos"), where("user", "==", user.uid));
+        // const q = query(todoCollection, orderBy("datetime", "desc"));
+
+        const results=await getDocs(q);
+        
+        const newTodos =[];
+
+        results.docs.forEach((doc)=>{
+            console.log(doc.data())
+            newTodos.push({id:doc.id, ...doc.data() });
+        });
+        setTodos(newTodos);
+    }
+
+    useEffect(()=>{
+        getTodos();
+    },[]);
+
     const addTodo = () => {
         if (itemInput.trim()==="" || dateInput==="") return;
 
         if (but==="리마인더 추가하기"){
-            setTodos([...todos,{id:Date.now(),item:itemInput,date:dateInput,completed:false}]);
+            const docRef = addDoc(todoCollection, {
+                item:itemInput,
+                date:dateInput,
+                completed:false,
+            });
+            setTodos([...todos,{id:docRef.id,item:itemInput,date:dateInput,completed:false}]);
             setItem("");setDate(today_str);
         } else {
-            setTodos(todos.map((todo)=>todo.id==modid? {...todo,item:itemInput,date:dateInput}:todo));
+            const newTodos=todos.map((todo)=>{
+                if (todo.id==modid){
+                    const todoDoc=doc(todoCollection,modid);
+                    updateDoc(todoDoc,{item:itemInput,date:dateInput});
+                    return {...todo,item:itemInput,date:dateInput}
+                } else {
+                    return todo;
+                }
+            })
+            // setTodos(todos.map((todo)=>todo.id==modid? {...todo,item:itemInput,date:dateInput}:todo));
+            setTodos(newTodos);
             setItem("");setDate(today_str);setbut("리마인더 추가하기")
             setmodid("");
         }
@@ -26,7 +76,17 @@ const TodoList = () => {
     }
 
     const toggleTodo = (id) => {
-        setTodos(todos.map((todo)=>todo.id===id? {...todo,completed:!todo.completed}:todo));
+        // setTodos(todos.map((todo)=>todo.id===id? {...todo,completed:!todo.completed}:todo));
+        const newTodos=todos.map((todo)=>{
+            if (todo.id==id){
+                const todoDoc=doc(todoCollection,id);
+                updateDoc(todoDoc,{completed:!todo.completed});
+                return {...todo,completed:!todo.completed}
+            } else {
+                return todo;
+            }
+        });
+        setTodos(newTodos);
     }
 
     const modiTodo = (id) => {
@@ -44,6 +104,8 @@ const TodoList = () => {
                 setmodid("");
             }
         }
+        const todoDoc=doc(todoCollection,id);
+        deleteDoc(todoDoc);
         setTodos(todos.filter((todo)=>todo.id!==id));
     }
     //렌더링
