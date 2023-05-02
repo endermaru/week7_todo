@@ -29,16 +29,17 @@ const TodoList = () => {
     const getTodos = async () => {
         const q=query(todoCollection);
         // const q = query(collection(db, "todos"), where("user", "==", user.uid));
-        // const q = query(todoCollection, orderBy("datetime", "desc"));
+        // const q = query(todoCollection, orderBy("date", "desc"));
 
         const results=await getDocs(q);
         
         const newTodos =[];
 
         results.docs.forEach((doc)=>{
-            console.log(doc.data())
             newTodos.push({id:doc.id, ...doc.data() });
         });
+        newTodos.sort((a,b)=>new Date(a.date).getTime()-new Date(b.date).getTime());
+        console.log(newTodos);
         setTodos(newTodos);
     }
 
@@ -46,16 +47,16 @@ const TodoList = () => {
         getTodos();
     },[]);
 
-    const addTodo = () => {
+    const addTodo = async () => {
         if (itemInput.trim()==="" || dateInput==="") return;
 
         if (but==="리마인더 추가하기"){
-            const docRef = addDoc(todoCollection, {
+            const docRef = await addDoc(todoCollection, {
                 item:itemInput,
                 date:dateInput,
                 completed:false,
             });
-            setTodos([...todos,{id:docRef.id,item:itemInput,date:dateInput,completed:false}]);
+            setTodos([...todos,{id:docRef.id,item:itemInput,date:dateInput,completed:false}].sort((a,b)=>new Date(a.date).getTime()-new Date(b.date).getTime()));
             setItem("");setDate(today_str);
         } else {
             const newTodos=todos.map((todo)=>{
@@ -68,6 +69,7 @@ const TodoList = () => {
                 }
             })
             // setTodos(todos.map((todo)=>todo.id==modid? {...todo,item:itemInput,date:dateInput}:todo));
+            newTodos.sort((a,b)=>new Date(a.date).getTime()-new Date(b.date).getTime());
             setTodos(newTodos);
             setItem("");setDate(today_str);setbut("리마인더 추가하기")
             setmodid("");
@@ -96,9 +98,10 @@ const TodoList = () => {
     }
 
     const delTodo = (id) => {
+        console.log(todos);
+        console.log(id);
         if (but=="리마인더 수정하기"){
             const selected=todos.filter((todo)=>todo.id===modid)[0];
-            console.log(selected);
             if (id===selected.id){
                 setItem("");setDate(today_str);setbut("리마인더 추가하기");
                 setmodid("");
