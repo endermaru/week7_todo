@@ -1,12 +1,24 @@
 import {useRouter} from "next/router";
 import {useSession, signIn, signOut} from "next-auth/react";
+import {useState} from "react";
 
 export default function Signin(){
     const router=useRouter();
     const {data:session} = useSession();
+    const admin_password='admin'
+    const [showInput, setShowInput] = useState(false);
+
+    const handleButtonClick = ()=> {
+        const try_pass=prompt('비밀번호를 입력하세요.', '')
+        if (admin_password==try_pass){
+            router.replace("admin");
+        } else {
+            alert("잘못된 비밀번호입니다.");
+        }
+    }
 
     return(
-        <div className="flex justify-center h-screen">
+        <div className="flex flex-col justify-center h-screen">
             {session?(
                 <div className="gird m-auto text-center">
                     <div className="m-4">Signed in as {session.user.name}</div>
@@ -45,6 +57,13 @@ export default function Signin(){
                     </button>
                 </div>
             )}
+            <div className="flex justify-center">
+                <button className={`justify-center w-20 h-10 p-1 mb-4 bg-blue-500 text-white
+                                    border border-blue-500 rounded
+                                    hover:bg-white hover:text-blue-500`}
+                        onClick={handleButtonClick}>ADMIN
+                </button>
+            </div>
         </div>
     );
 }

@@ -16,6 +16,7 @@ const TodoItem = ({todo,onToggle,onModi,onDel}) => {
             >
             {todo.date}
             </span>
+            
             <button className="shadow-lg w-15 p-1 mr-1 bg-red-500 text-white border border-red-500 rounded hover:bg-white hover:text-red-500" onClick={onDel}>Delete</button>
             <button className="shadow-lg w-15 p-1 bg-green-500 text-white border border-green-500 rounded hover:bg-white hover:text-green-500" onClick={onModi}>Modi</button>
         </li>
