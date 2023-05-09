@@ -1,4 +1,5 @@
 import React, {useState,useEffect} from "react";
+import {useSession} from "next-auth/react";
 import TodoItem from "./Todoitem"
 import styles from "../styles/TodoList.module.css";
 
@@ -13,6 +14,7 @@ import {
     updateDoc,
     deleteDoc,
     orderBy,
+    where,
 } from "firebase/firestore";
 
 const todoCollection = collection(db,"todos");
@@ -24,10 +26,17 @@ const TodoList = () => {
     const [dateInput,setDate] = useState(today_str);
     const [todos,setTodos] = useState([]);
     const [but,setbut]=useState('리마인더 추가하기');
-    const [modid,setmodid] =useState("")
+    const [modid,setmodid] =useState("");
+
+    const {data} =useSession();
 
     const getTodos = async () => {
-        const q=query(todoCollection);
+
+        if (!data?.user?.name) return;
+
+        const q=query(
+            todoCollection,
+            where("userId","==",data?.user?.id));
         // const q = query(collection(db, "todos"), where("user", "==", user.uid));
         // const q = query(todoCollection, orderBy("date", "desc"));
 
@@ -45,13 +54,14 @@ const TodoList = () => {
 
     useEffect(()=>{
         getTodos();
-    },[]);
+    },[data]);
 
     const addTodo = async () => {
         if (itemInput.trim()==="" || dateInput==="") return;
 
         if (but==="리마인더 추가하기"){
             const docRef = await addDoc(todoCollection, {
+                userId: data?.user?.id,
                 item:itemInput,
                 date:dateInput,
                 completed:false,
@@ -114,7 +124,7 @@ const TodoList = () => {
     //렌더링
     return (
         <div className="max-w-600 w-2/5 mx-auto p-10 bg-white shadow-xl rounded-lg">
-            <h1 className="text-4xl text-orange-500 mb-7 font-extrabold underline underline-light underline-offset-1 decoration-double">Reminder</h1>
+            <h1 className="text-4xl text-orange-500 mb-7 font-extrabold underline underline-light underline-offset-1 decoration-double">{data?.user?.name}'s Reminder</h1>
             <div className={styles.input_group}>
                 <input
                 type="text"
